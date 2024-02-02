@@ -16,6 +16,7 @@ end
 % Constants
 m_0 = 9.109e-31; % mass of an electron (kg)
 m_eff_init = 0.38; % initial effective mass
+m_eff_CBmin = 0.16; % effective mass at the base of the conduction band 
 eps_0 = 8.854e-12; % vacuum permittivity (F/m)
 mu_0 = 1.257e-6; % vacuum permeability (H/m)
 e = 1.602e-19; % electron charge (C)
@@ -120,16 +121,18 @@ end
     % create complementary m_e matrix calculated from n_lin matrix   
     if i == 1
         m_e_lin = linspace(m_e_init,m_e_init,101);    
+    
+    %for parabolic materials, comment out the second coeff_m_e (line 129)
+    %and replace it with the first one (line 128)
     else
-        coeff_m_e = 0.16*m_0*sqrt(1+(2*C_nonparabolic*((hbar_eV^2)/m_0)*(3*pi^2)^(2/3)));  
+        %m_e_lin = linspace(m_e_init,m_e_init,101);  
+        coeff_m_e = m_eff_CBmin*m_0*sqrt(1+(2*C_nonparabolic*((hbar_eV^2)/m_0)*(3*pi^2)^(2/3)));  
         m_e_lin = linspace(coeff_m_e*((n_mean/10^27)^(1/3)),coeff_m_e*((n_mean/10^27)^(1/3)),101);
     end
 
-    %[n, m_e, a] = ndgrid(n_lin, m_e_lin, a_lin); % changed this to 3D grid: carrier conc., effective mass , radius % probably the problem
     [n, m_e] = ndgrid(n_lin, m_e_lin);
     [n, a] = ndgrid(n_lin, a_lin);
  
-
     % Probability density function for the carrier conc. and radii
     P = 1/(2*pi*n_dev*a_dev)*exp(-1/2*((n-n_mean).^2/n_dev^2 + (a-a_mean).^2/a_dev^2));
     
@@ -219,7 +222,7 @@ for i = 1:(length(CoCp2_vol))
     if i ==1 
         m_e_final = m_eff_init;
     else
-        m_e_final = 0.16*sqrt(1+(2*C_nonparabolic*(((hbar_eV)^2)/(m_0)*(3*pi^2*((coeffs(1)/a_mean(i)^3)/10^27))^(2/3))));
+        m_e_final = m_eff_CBmin*sqrt(1+(2*C_nonparabolic*(((hbar_eV)^2)/(m_0)*(3*pi^2*((coeffs(1)/a_mean(i)^3)/10^27))^(2/3))));
     end
     
     % Compute some things from the fit and append to array with all values
